@@ -1,5 +1,5 @@
 
-Apache POI00
+Apache POI
 ======================
 
 A Java library for reading and writing Microsoft Office binary and OOXML file formats.
