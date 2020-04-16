@@ -28,9 +28,9 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTString;
  * These classes have so far been built only for read-only processing.
  */
 public abstract class XWPFAbstractSDT implements ISDTContents {
-    private final String title;
-    private final String tag;
-    private final IBody part;
+    private String title;
+    private String tag;
+    private IBody part;
 
     public XWPFAbstractSDT(CTSdtPr pr, IBody part) {
         if (pr == null) {

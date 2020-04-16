@@ -42,8 +42,8 @@ public class XWPFSDTContent implements ISDTContent {
     // private final XWPFDocument document;
     // private List<XWPFParagraph> paragraphs = new ArrayList<>();
     // private List<XWPFTable> tables = new ArrayList<>();
-    // private List<XWPFRun> runs = new ArrayList<>();
-    // private List<XWPFSDT> contentControls = new ArrayList<>();
+    private List<XWPFRun> runs = new ArrayList<>();
+    private List<XWPFSDT> contentControls = new ArrayList<>();
     private List<ISDTContents> bodyElements = new ArrayList<>();
 
     public XWPFSDTContent(CTSdtContentRun sdtRun, IBody part, IRunBody parent) {
@@ -52,7 +52,7 @@ public class XWPFSDTContent implements ISDTContent {
         }
         for (CTR ctr : sdtRun.getRArray()) {
             XWPFRun run = new XWPFRun(ctr, parent);
-            // runs.add(run);
+            runs.add(run);
             bodyElements.add(run);
         }
     }
@@ -76,10 +76,10 @@ public class XWPFSDTContent implements ISDTContent {
             } else if (o instanceof CTSdtBlock) {
                 XWPFSDT c = new XWPFSDT(((CTSdtBlock) o), part);
                 bodyElements.add(c);
-                // contentControls.add(c);
+                contentControls.add(c);
             } else if (o instanceof CTR) {
                 XWPFRun run = new XWPFRun((CTR) o, parent);
-                // runs.add(run);
+                runs.add(run);
                 bodyElements.add(run);
             }
         }
@@ -99,6 +99,9 @@ public class XWPFSDTContent implements ISDTContent {
                 appendTable((XWPFTable) o, text);
                 addNewLine = true;
             } else if (o instanceof XWPFSDT) {
+                text.append(((XWPFSDT) o).getContent().getText());
+                addNewLine = true;
+            } else if (o instanceof XWPFSDTCell) {
                 text.append(((XWPFSDT) o).getContent().getText());
                 addNewLine = true;
             } else if (o instanceof XWPFRun) {
@@ -140,5 +143,10 @@ public class XWPFSDTContent implements ISDTContent {
     @Override
     public String toString() {
         return getText();
+    }
+
+    @Override
+    public List<XWPFRun> getContent() {
+        return this.runs;
     }
 }

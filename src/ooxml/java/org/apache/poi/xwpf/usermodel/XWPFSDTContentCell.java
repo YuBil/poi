@@ -23,6 +23,8 @@ import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlCursor.TokenType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtContentCell;
 
+import java.util.List;
+
 
 /**
  * Experimental class to offer rudimentary read-only processing of
@@ -112,5 +114,10 @@ public class XWPFSDTContentCell implements ISDTContent {
 
     public String toString() {
         return getText();
+    }
+
+    @Override
+    public List<XWPFRun> getContent() {
+        return null;
     }
 }
