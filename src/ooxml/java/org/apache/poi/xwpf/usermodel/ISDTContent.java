@@ -17,6 +17,8 @@
 package org.apache.poi.xwpf.usermodel;
 
 
+import java.util.List;
+
 /**
  * Experimental interface to offer rudimentary read-only processing of
  * of the contentblock of an SDT/ContentControl.
@@ -30,5 +32,7 @@ public interface ISDTContent {
     public String getText();
 
     public String toString();
+
+    public List<XWPFRun> getContent();
 
 }

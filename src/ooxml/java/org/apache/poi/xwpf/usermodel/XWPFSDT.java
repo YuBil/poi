@@ -17,6 +17,8 @@
 package org.apache.poi.xwpf.usermodel;
 
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtBlock;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtEndPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtRun;
 
 /**
@@ -27,20 +29,43 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtRun;
  */
 public class XWPFSDT extends XWPFAbstractSDT
         implements IBodyElement, IRunBody, ISDTContents, IRunElement {
-    private final ISDTContent content;
+    private ISDTContent sdtContent;
+    private CTSdtPr sdtPr;
+    private CTSdtEndPr sdtEndPr;
 
     public XWPFSDT(CTSdtRun sdtRun, IBody part) {
         super(sdtRun.getSdtPr(), part);
-        this.content = new XWPFSDTContent(sdtRun.getSdtContent(), part, this);
+        this.sdtContent = new XWPFSDTContent(sdtRun.getSdtContent(), part, this);
+        this.sdtPr = sdtRun.getSdtPr();
     }
 
     public XWPFSDT(CTSdtBlock block, IBody part) {
         super(block.getSdtPr(), part);
-        this.content = new XWPFSDTContent(block.getSdtContent(), part, this);
+        this.sdtContent = new XWPFSDTContent(block.getSdtContent(), part, this);
+        this.sdtPr = block.getSdtPr();
     }
 
     public ISDTContent getContent() {
-        return content;
+        return sdtContent;
     }
 
+    public void setSdtContent(ISDTContent sdtContent) {
+        this.sdtContent = sdtContent;
+    }
+
+    public CTSdtPr getSdtPr() {
+        return sdtPr;
+    }
+
+    public void setSdtPr(CTSdtPr sdtPr) {
+        this.sdtPr = sdtPr;
+    }
+
+    public CTSdtEndPr getSdtEndPr() {
+        return sdtEndPr;
+    }
+
+    public void setSdtEndPr(CTSdtEndPr sdtEndPr) {
+        this.sdtEndPr = sdtEndPr;
+    }
 }
