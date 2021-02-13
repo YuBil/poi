@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.apache.poi.ooxml.POIXMLDocumentPart;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.util.Internal;
 import org.apache.poi.wp.usermodel.Paragraph;
 import org.apache.xmlbeans.XmlCursor;
@@ -36,7 +37,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
  * actual text (possibly along with more styling) is held on
  * the child {@link XWPFRun}s.</p>
  */
-public class XWPFParagraph implements IBodyElement, IRunBody, ISDTContents, Paragraph {
+public class XWPFParagraph implements IBodyElement, IRunBody, ISDTContentsBlock, Paragraph {
     private final CTP paragraph;
     protected IBody part;
     /**
@@ -132,12 +133,8 @@ public class XWPFParagraph implements IBodyElement, IRunBody, ISDTContents, Para
                     iruns.add(fr);
                 }
             }
-            if (o instanceof CTSdtBlock) {
-                XWPFSDT cc = new XWPFSDT((CTSdtBlock) o, part);
-                iruns.add(cc);
-            }
             if (o instanceof CTSdtRun) {
-                XWPFSDT cc = new XWPFSDT((CTSdtRun) o, part);
+                XWPFSDTRun cc = new XWPFSDTRun((CTSdtRun) o, this);
                 iruns.add(cc);
             }
             if (o instanceof CTRunTrackChange) {
@@ -202,8 +199,8 @@ public class XWPFParagraph implements IBodyElement, IRunBody, ISDTContents, Para
                 if (xRun.getCTR().getDelTextArray().length == 0) {
                     out.append(xRun);
                 }
-            } else if (run instanceof XWPFSDT) {
-                out.append(((XWPFSDT) run).getContent().getText());
+            } else if (run instanceof XWPFSDTRun) {
+                out.append(((XWPFSDTRun) run).getContent().getText());
             } else {
                 out.append(run);
             }
@@ -1454,6 +1451,30 @@ public class XWPFParagraph implements IBodyElement, IRunBody, ISDTContents, Para
         return xwpfRun;
     }
 
+    public XWPFSDTRun createSdtRun() {
+        XWPFSDTRun sdtRun = new XWPFSDTRun(paragraph.addNewSdt(), (IRunBody)this);
+        iruns.add(sdtRun);
+        return sdtRun;
+    }
+
+    public XWPFSDTRun insertNewSDTRunBeforeRun(XWPFRun run) {
+        int pos = iruns.indexOf(run);
+        if (pos == iruns.size()) {
+            return createSdtRun();
+        }
+        return insertNewProvidedSdtRun(pos, newCursor -> {
+            String uri = CTSdtRun.type.getName().getNamespaceURI();
+            String localPart = "sdt";
+            // creates a new sdt run, cursor is positioned inside the new
+            // element
+            newCursor.beginElement(localPart, uri);
+            // move the cursor to the START token to the run just created
+            newCursor.toParent();
+            CTSdtRun sdtRun = (CTSdtRun) newCursor.getObject();
+            return new XWPFSDTRun(sdtRun, (IRunBody)this);
+        });
+    }
+
     /**
      * Appends a new hyperlink run to this paragraph
      *
@@ -1600,6 +1621,34 @@ public class XWPFParagraph implements IBodyElement, IRunBody, ISDTContents, Para
                 iruns.add(iPos, newRun);
                 // Runs itself is easy to update
                 runs.add(pos, newRun);
+                return newRun;
+            }
+            newCursor.dispose();
+        }
+        return null;
+    }
+
+    /**
+     * insert a new run provided by  in all runs
+     *
+     * @param pos The position at which the new run should be added.
+     * @param provider provide a new run at position of the given cursor.
+     * @return the inserted run or null if the given pos is out of bounds.
+     */
+    private XWPFSDTRun insertNewProvidedSdtRun(int pos, Function<XmlCursor, XWPFSDTRun> provider) {
+        if (pos >= 0 && pos < runs.size()) {
+            XWPFRun run = runs.get(pos);
+            CTR ctr = run.getCTR();
+
+            XmlCursor newCursor = ctr.newCursor();
+            if (!isCursorInParagraph(newCursor)) {
+                // look up correct position for CTP -> XXX -> R array
+                newCursor.toParent();
+            }
+            if (isCursorInParagraph(newCursor)) {
+                // provide a new sdt run
+                XWPFSDTRun newRun = provider.apply(newCursor);
+                iruns.add(pos, newRun);
                 return newRun;
             }
             newCursor.dispose();
